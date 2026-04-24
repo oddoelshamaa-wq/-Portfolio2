@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مطعم   </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --blue: #1a237e; --dark-blue: #0d1b6e; --red: #b71c1c; --white: #ffffff; --bg-gray: #f4f6f8; --text: #333; }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Cairo', sans-serif; margin: 0; background: var(--bg-gray); padding-bottom: 0; overflow-x: hidden; }
+        
+        /* --- LOADER STYLES (ستايل منكش) --- */
+        #loader-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff; z-index: 99999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        .loader-content { position: relative; width: 150px; height: 150px; display: flex; justify-content: center; align-items: center; }
+        .loader-logo { 
+            width: 100px; height: 100px; border-radius: 50%; object-fit: cover; 
+            border: 4px solid white; box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite; 
+        }
+        .loader-spinner {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border: 3px solid transparent; border-top-color: var(--blue); border-bottom-color: var(--red);
+            border-radius: 50%; animation: spin 1s linear infinite; z-index: 1;
+        }
+        .loader-text { 
+            margin-top: 20px; font-size: 2rem; font-weight: 900; color: var(--blue); 
+            letter-spacing: 5px; text-transform: uppercase;
+            animation: shake 2s infinite;
+        }
+        
+        /* انميشن منكش (Glitch/Shake) */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes glitch { 
+            0% { transform: translate(0) } 
+            20% { transform: translate(-2px, 2px) } 
+            40% { transform: translate(-2px, -2px) } 
+            60% { transform: translate(2px, 2px) } 
+            80% { transform: translate(2px, -2px) } 
+            100% { transform: translate(0) }
+        }
+        @keyframes shake {
+            0% { transform: skewX(-10deg); }
+            5% { transform: skewX(10deg); }
+            10% { transform: skewX(-10deg); }
+            15% { transform: skewX(10deg); }
+            20% { transform: skewX(0deg); }
+            100% { transform: skewX(0deg); }
+        }
+        .hide-loader { opacity: 0; visibility: hidden; }
+
+        /* General UI */
+        header { background: linear-gradient(135deg, #1a237e 0%, #283593 100%); color: var(--white); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); height: 70px; }
+        .logo-img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: white; }
+        .user-controls { display: flex; gap: 15px; align-items: center; }
+        .icon-wrap { position: relative; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .badge { position: absolute; top: 0; right: 0; background: var(--red); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; font-weight: bold; display: flex; align-items: center; justify-content: center; border: 2px solid var(--blue); }
+        .profile-btn { background: rgba(255,255,255,0.2); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
+        .hero { background: linear-gradient(rgba(26, 35, 126, 0.8), rgba(183, 28, 28, 0.6)), url('https://source.unsplash.com/800x600/?egyptian-food') center/cover; height: 160px; display: flex; align-items: center; justify-content: center; text-align: center; color: white; border-radius: 0 0 25px 25px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .category-nav { display: flex; overflow-x: auto; padding: 5px 15px 15px; gap: 10px; scrollbar-width: none; }
+        .cat-btn { background: white; color: var(--text); border: 1px solid #e0e0e0; padding: 8px 20px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: 0.3s; }
+        .cat-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+        .container { padding: 0 15px; max-width: 800px; margin: 0 auto; min-height: 50vh; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
+        .card img { width: 100%; height: 130px; object-fit: cover; }
+        .card-body { padding: 12px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .price-tag { font-size: 0.9rem; color: var(--red); font-weight: 700; margin-bottom: 10px; }
+        .btn-add { background: var(--blue); color: white; border: none; padding: 8px; width: 100%; border-radius: 8px; font-size: 0.9rem; cursor: pointer; font-weight: bold; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2500; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(4px); }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 380px; position: relative; animation: popUp 0.3s ease; }
+        @keyframes popUp { from {transform: scale(0.9); opacity: 0;} to {transform: scale(1); opacity: 1;} }
+        .close-btn { position: absolute; top: 15px; left: 15px; font-size: 1.5rem; color: #aaa; cursor: pointer; }
+        .custom-input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; font-family: 'Cairo'; background: #fafafa; font-size: 1rem; }
+        .btn-main { background: var(--blue); color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-danger { background: var(--red); color: white; padding:10px; width:100%; border:none; border-radius:10px; font-weight: 700; margin-top:5px; }
+        footer { background-color: var(--dark-blue); color: white; text-align: center; padding: 25px 0 30px 0; margin-top: 40px; border-top: 4px solid var(--red); }
+        .footer-hotline { font-size: 2rem; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .footer-icons { display: flex; justify-content: center; gap: 25px; margin-bottom: 15px; }
+        .footer-icons a { color: white; font-size: 2rem; }
+        .chat-float { position: fixed; bottom: 30px; left: 20px; background: var(--red); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; z-index: 2000; cursor: pointer; border: 2px solid white; transition: 0.3s; }
+        .chat-float.new-msg { animation: pulse 1s infinite; box-shadow: 0 0 15px red; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .chat-window { display: none; position: fixed; bottom: 100px; left: 20px; width: 300px; height: 400px; background: white; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); z-index: 2000; flex-direction: column; overflow: hidden; border: 1px solid #eee; }
+        .option-item { padding: 15px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; transition: 0.2s; }
+        .option-item.selected { border: 2px solid var(--blue); background: #f0f7ff; }
+        .cancel-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px; width: 100%; }
+        .item-note-input { width: 100%; border: 1px solid #ccc; border-radius: 8px; padding: 10px; font-family: 'Cairo'; margin-bottom: 10px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <!-- Loader -->
+    <div id="loader-wrapper">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <img src="https://scontent.fcai20-3.fna.fbcdn.net/v/t39.30808-6/374567354_674327448061584_5979966477678462692_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=FrSE9MWl_6QQ7kNvwFAhUPI&_nc_oc=AdngfO4ff4o0AxSljHVhHGAePUVZNEldFjkcBsv_8eQHPfm9ij4TVXXKAhVa_6BsBjk&_nc_zt=23&_nc_ht=scontent.fcai20-3.fna&_nc_gid=TQzikFqmvYqvF2LOrq__Ng&oh=00_AfnWFPsTcAl4x79UCBVaeSyBIxtONCa4PSqLWNhw7aGh5Q&oe=6942B46F" class="loader-logo" alt="Nagaf Logo">
+        </div>
+        <div class="loader-text">مطعم </div>
+    </div>
+
+    <audio id="msgSound" src="https://assets.mixkit.co/active_storage/sfx/2346/2346-preview.mp3"></audio>
+
+    <header>
+        <div class="user-controls">
+            <div class="icon-wrap" onclick="openCart()"><i class="fas fa-shopping-basket"></i><span class="badge" id="cartCount">0</span></div>
+            <div class="icon-wrap" onclick="openMyOrders()"><i class="fas fa-receipt"></i></div>
+            <div id="loginBtnNav" class="profile-btn" onclick="openAuth()"><i class="fas fa-sign-in-alt"></i></div>
+            <div id="userProfileNav" class="profile-btn" style="display:none;" onclick="openProfile()"><i class="fas fa-user"></i></div>
+        </div>
+        <div class="logo-container"><img src="https://scontent.fcai20-3.fna.fbcdn.net/v/t39.30808-6/374567354_674327448061584_5979966477678462692_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=FrSE9MWl_6QQ7kNvwFAhUPI&_nc_oc=AdngfO4ff4o0AxSljHVhHGAePUVZNEldFjkcBsv_8eQHPfm9ij4TVXXKAhVa_6BsBjk&_nc_zt=23&_nc_ht=scontent.fcai20-3.fna&_nc_gid=TQzikFqmvYqvF2LOrq__Ng&oh=00_AfnWFPsTcAl4x79UCBVaeSyBIxtONCa4PSqLWNhw7aGh5Q&oe=6942B46F" alt="Nagaf" class="logo-img"></div>
+    </header>
+
+    <div class="hero"><div><h1>أصل الأكل المصري</h1><p>أطلب واستمتع بالطعم الأصلي</p></div></div>
+    
+    <div class="category-nav" id="categoryNav"></div>
+    <div class="container"><div class="grid" id="productGrid"></div></div>
+    
+    <footer>
+        <div class="footer-hotline"><i class="fas fa-headset"></i> رقم الخط السخن </div>
+        <div class="footer-icons">
+            <a href="https://wa.me/20112284885" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://www.facebook.com//" target="_blank"><i class="fab fa-facebook-f"></i></a>
+        </div>
+        <div class="footer-copy">نجف | 1958</div>
+    </footer>
+    
+    <!-- Modals -->
+    <div class="modal" id="authModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('authModal')">&times;</span><h2 style="text-align:center;color:var(--blue);">تسجيل جديد</h2><input type="text" id="regName" class="custom-input" placeholder="الاسم"><input type="tel" id="regPhone" class="custom-input" placeholder="رقم الهاتف"><select id="regZone" class="custom-input"><option value="" disabled selected>اختر المنطقة</option><option value="المعادي">المعادي</option><option value="مدينة نصر">مدينة نصر</option><option value="مصر الجديدة">مصر الجديدة</option><option value="وسط البلد">وسط البلد</option><option value="الهرم">الهرم</option><option value="أخرى">منطقة أخرى</option></select><input type="text" id="regAddress" class="custom-input" placeholder="اسم الشارع ورقم العقار"><button class="btn-main" onclick="handleRegister()">حفظ البيانات</button></div></div>
+    
+    <div class="modal" id="profileModal"><div class="modal-content" style="text-align:center;"><span class="close-btn" onclick="closeModal('profileModal')">&times;</span><div style="width:80px;height:80px;background:#f0f0f0;border-radius:50%;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--blue);"><i class="fas fa-user-circle"></i></div><h3 id="profName" style="margin:5px 0;"></h3><p id="profPhone" style="color:#666;margin:5px 0;"></p><p id="profAddress" style="color:#666;font-size:0.9rem;margin-bottom:20px;"></p><button class="btn-danger" onclick="logout()">تسجيل الخروج</button></div></div>
+    
+    <div class="modal" id="successModal"><div class="modal-content" style="text-align:center;"><i class="fas fa-check-circle" style="font-size:4rem;color:#27ae60;margin-bottom:15px;display:block;"></i><h3 style="color:var(--blue);margin:10px 0;">تم الإرسال بنجاح!</h3><p style="color:#555;font-size:1.1rem;">سيتم مراجعة النطاق الجغرافي وتأكيد الطلب.</p><button class="btn-main" onclick="closeSuccessModal()">حسناً</button></div></div>
+    
+    <div class="modal" id="optionsModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('optionsModal')">&times;</span>
+            <h3 id="optProdName" style="color:var(--blue);text-align:center;margin-top:0;"></h3>
+            <div id="variantsList" style="margin:15px 0;max-height:200px;overflow-y:auto;"></div>
+            <label style="font-weight:bold;display:block;margin-bottom:5px;">ملاحظات خاصة:</label>
+            <input type="text" id="itemNote" class="item-note-input" placeholder="مثال: بدون بصل، زيادة طحينة...">
+            <h4 style="text-align:center;margin:10px 0;">السعر: <span id="selectedPrice" style="color:var(--red);font-size:1.2rem;">0</span> ج</h4>
+            <button class="btn-main" onclick="confirmAddToCart()">أضف للسلة</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="cartModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('cartModal')">&times;</span><h2 style="color:var(--blue);text-align:center;border-bottom:1px solid #eee;padding-bottom:10px;">سلة المشتريات</h2><div id="cartItems" style="max-height:300px;overflow-y:auto;margin-bottom:15px;"></div><div style="display:flex;justify-content:space-between;font-weight:bold;font-size:1.1rem;margin-bottom:15px;"><span>الإجمالي:</span><span style="color:var(--red);"><span id="cartTotal">0</span> جنيه</span></div><button class="btn-main" onclick="submitOrder()">تأكيد الطلب</button></div></div>
+    
+    <div class="modal" id="ordersModal"><div class="modal-content"><span class="close-btn" onclick="closeModal('ordersModal')">&times;</span><h2 style="text-align:center;color:var(--blue);">طلباتي السابقة</h2><div id="ordersList" style="max-height:60vh;overflow-y:auto;background:#f9f9f9;padding:10px;border-radius:10px;"></div></div></div>
+    
+    <div class="chat-float" id="chatFloat" onclick="toggleChat()"><i class="fas fa-headset"></i></div>
+    <div class="chat-window" id="chatWindow"><div style="background:var(--blue);color:white;padding:12px;display:flex;justify-content:space-between;"><span style="font-weight:bold;">خدمة العملاء</span><span onclick="toggleChat()" style="cursor:pointer;">✖</span></div><div id="chatBody" style="flex:1;padding:10px;overflow-y:auto;background:#f9f9f9;display:flex;flex-direction:column;gap:8px;"></div><div style="padding:10px;border-top:1px solid #ddd;display:flex;"><input type="text" id="chatInput" placeholder="اكتب..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:20px;margin-left:5px;"><button onclick="sendChat()" style="background:var(--blue);color:white;border:none;width:35px;height:35px;border-radius:50%;"><i class="fas fa-paper-plane"></i></button></div></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        
+        const firebaseConfig = { apiKey: "AIzaSyAaf3l8VFttOCruK9jZczBsi1eBwg2U5yE", authDomain: "nagaf-f9b1c.firebaseapp.com", projectId: "nagaf-f9b1c", databaseURL: "https://nagaf-f9b1c-default-rtdb.firebaseio.com", storageBucket: "nagaf-f9b1c.appspot.com", messagingSenderId: "840123927886", appId: "1:840123927886:web:c6baad7f059cfab461e21f" };
+        const app = initializeApp(firebaseConfig); 
+        const db = getDatabase(app);
+        
+        // --- Loader Logic ---
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('loader-wrapper');
+            setTimeout(() => {
+                loader.classList.add('hide-loader');
+                setTimeout(() => { loader.style.display = 'none'; }, 800);
+            }, 2500); 
+        });
+
+        let cart=[], currentUser=JSON.parse(localStorage.getItem('nagaf_user_info')), products=[], selectedProductTemp=null, selectedVariantTemp=null;
+
+        onValue(ref(db, 'products'), (s) => { products=Object.values(s.val()||{}); loadProducts('all'); });
+        onValue(ref(db, 'categories'), (s) => { 
+            const nav=document.getElementById('categoryNav'); nav.innerHTML='<button class="cat-btn active" onclick="window.filterCat(\'all\',this)">الكل</button>';
+            Object.values(s.val()||{}).forEach(c=>nav.innerHTML+=`<button class="cat-btn" onclick="window.filterCat('${c.name}',this)">${c.name}</button>`);
+        });
+
+        window.filterCat = function(c,b) { document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); loadProducts(c); }
+        window.loadProducts = function(c) {
+            const g=document.getElementById('productGrid'); g.innerHTML='';
+            products.forEach(p=>{
+                if((c==='all'||p.cat===c)&&p.available){
+                    const minPrice = p.variants?Math.min(...p.variants.map(v=>v.price)):0;
+                    g.innerHTML+=`<div class="card" onclick="window.openOptions('${p.name}')"><img src="${p.img}" alt="${p.name}"><div class="card-body"><h3>${p.name}</h3><div class="price-tag">يبدأ من ${minPrice} ج</div><button class="btn-add">أضف للسلة</button></div></div>`;
+                }
+            });
+        }
+
+        if(currentUser) { setupUserUI(); initChatListener(); }
+        window.openAuth=()=>document.getElementById('authModal').style.display='flex';
+        window.openProfile=()=>{ if(!currentUser){openAuth();return;} document.getElementById('profName').innerText=currentUser.name; document.getElementById('profPhone').innerText=currentUser.phone; document.getElementById('profAddress').innerText=currentUser.address; document.getElementById('profileModal').style.display='flex'; }
+        window.closeModal=function(id){document.getElementById(id).style.display='none';}
+        window.logout=()=>{ localStorage.removeItem('nagaf_user_info'); location.reload(); }
+        window.handleRegister=()=>{
+            let n=document.getElementById('regName').value, p=document.getElementById('regPhone').value, z=document.getElementById('regZone').value, a=document.getElementById('regAddress').value;
+            if(n&&p&&z&&a){ currentUser={name:n,phone:p,address:`${z} - ${a}`,zone:z}; localStorage.setItem('nagaf_user_info',JSON.stringify(currentUser)); push(ref(db,'users'),{...currentUser,role:'customer'}); setupUserUI(); closeModal('authModal'); initChatListener(); } else alert('اكمل البيانات');
+        }
+        function setupUserUI(){ document.getElementById('loginBtnNav').style.display='none'; document.getElementById('userProfileNav').style.display='flex'; }
+
+        window.openOptions=function(n){
+            selectedProductTemp=products.find(p=>p.name===n); 
+            document.getElementById('optProdName').innerText=n;
+            const l=document.getElementById('variantsList'); l.innerHTML='';
+            selectedProductTemp.variants.forEach((v,i)=>{
+                let sizeTxt = v.size && v.size !== 'موحد' ? ` (${v.size})` : '';
+                l.innerHTML+=`<div class="option-item" onclick="selectVar(${i},this)"><div class="option-details"><b>${v.bread}${sizeTxt}</b></div><div style="font-weight:bold;color:var(--red)">${v.price} ج</div></div>`;
+            });
+            if(l.children[0]) window.selectVar(0,l.children[0]);
+            document.getElementById('itemNote').value = '';
+            document.getElementById('optionsModal').style.display='flex';
+        }
+
+        window.selectVar=function(i,el){ 
+            document.querySelectorAll('.option-item').forEach(x=>x.classList.remove('selected')); el.classList.add('selected');
+            selectedVariantTemp=selectedProductTemp.variants[i]; document.getElementById('selectedPrice').innerText=selectedVariantTemp.price; 
+        }
+
+        window.confirmAddToCart=function(){ 
+            let noteTxt = document.getElementById('itemNote').value;
+            cart.push({ ...selectedProductTemp, variant: selectedVariantTemp, note: noteTxt }); 
+            updateCart(); closeModal('optionsModal'); 
+        }
+
+        function updateCart(){ 
+            document.getElementById('cartCount').innerText=cart.length; 
+            const d=document.getElementById('cartItems'); 
+            let t=0; 
+            d.innerHTML=cart.map((i,x)=>{
+                t+=i.variant.price; 
+                let noteHtml = i.note ? `<br><small style="color:#e67e22;"><i class="fas fa-comment-dots"></i> ${i.note}</small>` : '';
+                return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;">
+                    <div><b>${i.name}</b><br><small>${i.variant.bread} ${i.variant.size !== 'موحد' ? '- '+i.variant.size : ''}</small>${noteHtml}</div>
+                    <div>${i.variant.price}ج <i class="fas fa-trash" style="color:red;cursor:pointer;margin-right:5px;" onclick="window.remItem(${x})"></i></div>
+                </div>`
+            }).join(''); 
+            document.getElementById('cartTotal').innerText=t; 
+        }
+
+        window.remItem=function(i){ cart.splice(i,1); updateCart(); }
+        window.openCart=function(){ document.getElementById('cartModal').style.display='flex'; }
+        
+        window.submitOrder=function(){
+            if(!currentUser){ closeModal('cartModal'); return openAuth(); }
+            if(!cart.length) return alert('السلة فارغة');
+            push(ref(db,'orders'),{customerName:currentUser.name,phone:currentUser.phone,address:currentUser.address,items:cart,total:parseInt(document.getElementById('cartTotal').innerText),status:'pending',timestamp:Date.now(),seenByAdmin:false})
+            .then(()=>{ closeModal('cartModal'); cart=[]; updateCart(); document.getElementById('successModal').style.display='flex'; }).catch(()=>alert('خطأ'));
+        }
+        window.closeSuccessModal=()=>{ document.getElementById('successModal').style.display='none'; window.openMyOrders(); }
+        
+        // --- Order History & Cancellation Logic ---
+        window.openMyOrders=function(){
+            if(!currentUser) return openAuth();
+            onValue(ref(db,'orders'),(s)=>{
+                const d=s.val()||{}, l=document.getElementById('ordersList'); l.innerHTML='';
+                const mo=Object.values(d).map((v, i) => ({...v, key: Object.keys(d)[i]})).filter(o=>o.phone===currentUser.phone).reverse();
+                if(!mo.length) l.innerHTML='<p style="text-align:center">لا يوجد طلبات</p>';
+                
+                mo.forEach(o=>{ 
+                    let st = o.status==='pending' ? 'جاري مراجعة النطاق...' : (o.status==='processing'?'جاري التحضير':(o.status==='completed'?'مكتمل':'ملغي'));
+                    let clr = o.status==='completed'?'green':(o.status==='cancelled'?'red':'orange');
+                    
+                    // التعديل هنا: السماح بالإلغاء في حالتي (جديد/مراجعة) و (جاري التحضير)
+                    let cancelInfo = '';
+                    if (o.status === 'pending' || o.status === 'new' || o.status === 'processing') {
+                        if (o.cancelRequest) {
+                            cancelInfo = '<span style="color:#d35400; font-size:0.8rem; font-weight:bold;"><i class="fas fa-clock"></i> في انتظار موافقة الإدارة على الإلغاء...</span>';
+                        } else {
+                            cancelInfo = `<button class="cancel-btn" onclick="window.requestCancel('${o.key}')">إلغاء الطلب</button>`;
+                        }
+                    }
+
+                    // عرض سبب الإلغاء إذا تم رفضه أو إلغاؤه من الإدارة
+                    let reasonHTML = '';
+                    if(o.status === 'cancelled' && o.adminReason) {
+                        reasonHTML = `<div style="background:#ffebee; color:#c62828; padding:5px; margin-top:5px; border-radius:5px; font-size:0.9rem;"><strong>سبب الإلغاء:</strong> ${o.adminReason}</div>`;
+                    }
+
+                    l.innerHTML+=`
+                    <div style="background:white;padding:10px;margin-bottom:10px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                        <b>${o.total} ج</b> - <span style="color:${clr}">${st}</span>
+                        <br><small>${new Date(o.timestamp).toLocaleString('ar-EG')}</small>
+                        ${reasonHTML}
+                        <br>${cancelInfo}
+                    </div>`; 
+                });
+                document.getElementById('ordersModal').style.display='flex';
+            });
+        }
+
+        window.requestCancel = function(key) {
+            let reason = prompt("ما هو سبب رغبتك في إلغاء الطلب؟");
+            if(reason) {
+                update(ref(db, 'orders/'+key), { cancelRequest: true, cancelReason: reason })
+                .then(() => alert("تم إرسال طلب الإلغاء للمطعم، يرجى الانتظار للموافقة."))
+                .catch((e) => alert("حدث خطأ"));
+            }
+        }
+
+        let chatInitialized = false;
+        function initChatListener() {
+            if(!currentUser) return;
+            onValue(ref(db,'chats/'+currentUser.phone), (s) => {
+                const msgs = Object.values(s.val()||{});
+                const chatBody = document.getElementById('chatBody');
+                chatBody.innerHTML = msgs.map(m=>`<div style="align-self:${m.sender==='customer'?'flex-start':'flex-end'};background:${m.sender==='customer'?'var(--blue)':'#ddd'};color:${m.sender==='customer'?'white':'black'};padding:8px 12px;border-radius:12px;margin:2px;max-width:85%;">${m.text}</div>`).join('');
+                chatBody.scrollTop = chatBody.scrollHeight;
+                if(chatInitialized) {
+                    const last = msgs[msgs.length-1];
+                    if(last && last.sender === 'admin' && Date.now() - last.timestamp < 10000) {
+                        document.getElementById('msgSound').play().catch(()=>{});
+                        document.getElementById('chatFloat').classList.add('new-msg');
+                    }
+                } else chatInitialized = true;
+            });
+        }
+
+        window.toggleChat=()=>{ 
+            const w=document.getElementById('chatWindow'); 
+            w.style.display=w.style.display==='none'?'flex':'none'; 
+            document.getElementById('chatFloat').classList.remove('new-msg'); 
+            if(currentUser && !chatInitialized) initChatListener(); 
+        }
+        window.sendChat=()=>{ let t=document.getElementById('chatInput').value; if(t&&currentUser){ push(ref(db,'chats/'+currentUser.phone),{sender:'customer',text:t, timestamp:Date.now()}); document.getElementById('chatInput').value=''; } else if(!currentUser) openAuth(); }
+    </script>
+</body> 
+</html>
