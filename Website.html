@@ -218,6 +218,74 @@
             }));
         }
 
+        // Seed 10 sample products if none exist (TODO.md task)
+        if(!localStorage.getItem('elshamaaProducts') || JSON.parse(localStorage.getItem('elshamaaProducts')).length === 0) {
+            const seedProducts = [
+                {
+                    id: 1, name: "آيفون 15 برو ماكس 256 جيجا", price: "45000", discountPrice: "42000", quantity: 5,
+                    category: "تكنولوجيا", subCategory: "موبايلات",
+                    description: "آيفون 15 برو ماكس بكاميرا احترافية 48 ميجا، شاشة ProMotion 120Hz، تيتانيوم قوي. مثالي للمصورين والمحترفين.",
+                    img: "https://images.unsplash.com/photo-1691113093106-5f3142e9d6ed?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 2, name: "سامسونج جالاكسي S24 Ultra", price: "38000", quantity: 3,
+                    category: "تكنولوجيا", subCategory: "موبايلات",
+                    description: "S24 Ultra بقلم S Pen، كاميرا 200 ميجا، شاشه AMOLED 6.8 بوصه. قوي للأعمال والألعاب.",
+                    img: "https://images.unsplash.com/photo-1701373259739-0c0d331d5c80?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 3, name: "ماك بوك إيير M3 16 جيجا", price: "65000", quantity: 2,
+                    category: "تكنولوجيا", subCategory: "لابتوب",
+                    description: "ماك بوك إير M3 بمعالج 8-core CPU، بطارية 18 ساعة، تصميم خفيف 1.2 كجم. مثالي للتصميم والبرمجة.",
+                    img: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 4, name: "بلاي ستيشن 5 1 تيرا", price: "28000", quantity: 8,
+                    category: "تكنولوجيا", subCategory: "لابتوب",
+                    description: "PS5 بذاكرة 1 تيرا، SSD سريع، Ray Tracing، DualSense Controller. تجربة ألعاب واقعية 4K.",
+                    img: "https://images.unsplash.com/photo-1606144042614-7cd4a3f6f5d8?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 5, name: "تيشرت رياضي قطن 100%", price: "450", quantity: 25,
+                    category: "ملابس", subCategory: "رجالي",
+                    description: "تيشرت رياضي قطني مريح، تنفس عالي، تصميم عصري. مثالي للجري والتمارين اليومية.",
+                    img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 6, name: "فستان سهرة ساتان أسود", price: "1200", discountPrice: "950", quantity: 12,
+                    category: "ملابس", subCategory: "حريمي",
+                    description: "فستان سهرة ساتان لامع، قصة A-line مريحة، مثالي للمناسبات الخاصة والحفلات.",
+                    img: "https://images.unsplash.com/photo-1574676301557-b334d5d4c603?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 7, name: "كنبة عصرية رمادي 3 مقاعد", price: "8500", quantity: 4,
+                    category: "منزل", subCategory: "أثاث",
+                    description: "كنبة عصرية قماش رمادي، إطار خشبي قوي، تصميم S-line مريح للعائلة.",
+                    img: "https://images.unsplash.com/photo-1558618047-3c8c76bbb17e?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 8, name: "مكيف سبليت 2 حصان إنفرتر", price: "14500", quantity: 6,
+                    category: "منزل", subCategory: "أثاث",
+                    description: "مكيف سبليت 2 حصان إنفرتر توفير طاقة 60%، تبريد سريع، ضمان 7 سنوات.",
+                    img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 9, name: "عطر ديور سافاج إيديشن", price: "3200", quantity: 15,
+                    category: "عطور", subCategory: "",
+                    description: "عطر ديور سافاج إيديشن 100 مل، ريحة خشبية قوية تدوم 12 ساعة، مثالي للرجال.",
+                    img: "https://images.unsplash.com/photo-1611606062821-60981dd559ac?w=400&h=300&fit=crop"
+                },
+                {
+                    id: 10, name: "ساعة رولكس سوبمارينر", price: "125000", quantity: 1,
+                    category: "تكنولوجيا", subCategory: "اكسسوارات",
+                    description: "رولكس سوبمارينر كلاسيكية، مقاومة 300م، إنتاج محدود، قطعة استثمارية.",
+                    img: "https://images.unsplash.com/photo-1541781774459-bb2af79a246b?w=400&h=300&fit=crop"
+                }
+            ];
+            localStorage.setItem('elshamaaProducts', JSON.stringify(seedProducts));
+            console.log("✅ تمت إضافة 10 منتجات تجريبية للمتجر!");
+        }
+
         let currentCat = 'all';
         let currentSub = 'all';
         let selectedAddressId = null;
