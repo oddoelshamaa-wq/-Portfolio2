@@ -2,139 +2,988 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Mahmoud Admin</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-
+    <title>نظام إدارة Elshamaa Pro - Enterprise</title>
     <style>
-        body { background-color: #0a0a0a; color: white; font-family: 'Cairo', sans-serif; padding: 20px; }
-        .msg-card { 
-            background: rgba(255, 255, 255, 0.03); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 20px; 
-            padding: 25px; 
-            margin-bottom: 20px;
-            transition: 0.3s;
-        }
-        .msg-card:hover { border-color: #00f2fe; background: rgba(255, 255, 255, 0.05); }
-        #auth-screen {
-            position: fixed; inset: 0; background: #000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
-        }
-        .neon-border { border: 1px solid #00f2fe; box-shadow: 0 0 15px rgba(0, 242, 254, 0.2); }
+        :root { --main: #6366f1; --dark: #1e293b; --light: #f1f5f9; --danger: #ef4444; --green: #10b981; --warning: #f59e0b; }
+        /* WhatsApp Colors */
+        :root { --wa-bg: #efe7dd; --wa-header: #008069; --wa-my-msg: #d9fdd3; --wa-their-msg: #ffffff; }
+        
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; transition: all 0.3s ease; }
+        body { display: flex; height: 100vh; margin: 0; background: var(--light); overflow: hidden; }
+
+        /* Login Screen */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column; color: white; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; width: 350px; text-align: center; color: var(--dark); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #eee; border-radius: 10px; }
+        .login-box button { width: 100%; padding: 12px; background: var(--main); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+
+        /* Sidebar */
+        aside { width: 260px; background: var(--dark); color: white; padding: 20px; display: flex; flex-direction: column; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        aside h2 { text-align: center; margin-bottom: 20px; color: var(--main); letter-spacing: 2px; font-weight: 800; }
+        .user-info { text-align: center; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 20px; font-size: 13px; }
+        .menu-btn { padding: 12px; margin: 5px 0; cursor: pointer; border-radius: 10px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-size: 14px; }
+        .menu-btn:hover, .menu-btn.active { background: rgba(255,255,255,0.1); color: white; transform: translateX(-5px); }
+        .menu-btn.active { border-right: 4px solid var(--main); }
+
+        /* Main Content */
+        main { flex: 1; padding: 25px; overflow-y: auto; }
+        .section { display: none; animation: fadeIn 0.4s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        h3 { margin-bottom: 15px; color: var(--dark); border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; font-size: 18px; }
+        
+        input, select, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 2px solid #e2e8f0; border-radius: 8px; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--main); }
+        
+        button.action-btn { background: var(--main); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-left: 5px; }
+        button.action-btn:hover { background: #4f46e5; }
+
+        /* Stats & Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { padding: 20px; border-radius: 15px; color: white; position: relative; overflow: hidden; }
+        .stat-card h1 { margin: 5px 0 0; font-size: 28px; }
+        .bg-blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .bg-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .bg-orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .bg-purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+
+        /* Tables & Lists */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th { text-align: right; color: #64748b; padding: 10px; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; color: var(--dark); vertical-align: middle; }
+        .clickable-row { cursor: pointer; transition: 0.2s; }
+        .clickable-row:hover { background-color: #f1f5f9; transform: scale(1.005); }
+
+        .badge { padding: 4px 8px; border-radius: 15px; font-size: 11px; font-weight: bold; color: white; }
+        .bg-badge-gray { background: #94a3b8; }
+        
+        .cat-item { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #eee; }
+        .delete-btn { background: #fee2e2; color: #ef4444; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
+        .order-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 10px; border-right: 5px solid var(--main); position: relative; }
+        .prod-thumb { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; border: 1px solid #ddd; margin-left: 10px; }
+
+        /* Price Styling (Old vs New) */
+        .old-price { text-decoration: line-through; color: #999; font-size: 0.9em; margin-left: 5px; }
+        .new-price { color: var(--green); font-weight: bold; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .modal-content { background: white; width: 90%; max-width: 600px; padding: 25px; border-radius: 15px; animation: scaleUp 0.3s; position: relative; max-height: 90vh; overflow-y: auto; }
+        @keyframes scaleUp { from{transform:scale(0.8); opacity:0} to{transform:scale(1); opacity:1} }
+        
+        .reset-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px; margin-top: 15px; text-decoration: underline; }
+
+        /* Filter Bar Styles */
+        .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; background: #f0f9ff; padding: 15px; border-radius: 10px; margin-bottom: 20px; align-items: flex-end; border: 1px solid #bae6fd; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 150px; }
+        .filter-group label { font-size: 12px; font-weight: bold; color: #0284c7; }
+
+        /* --- WhatsApp Style Chat --- */
+        .chat-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 0; height: 500px; border: 1px solid #ddd; border-radius: 0; overflow: hidden; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .chat-sidebar { border-left: 1px solid #eee; overflow-y: auto; background: white; }
+        
+        .chat-main { display: flex; flex-direction: column; background-color: var(--wa-bg); background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png"); /* WA Doodle Pattern */ background-blend-mode: overlay; position: relative; }
+        
+        /* Chat Header */
+        #chatHeader { padding: 10px 15px; background: #f0f2f5; border-bottom: 1px solid #ddd; font-weight: bold; color: #333; display: flex; align-items: center; gap: 10px; height: 60px; }
+        
+        .chat-user-item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; flex-direction: column; gap: 5px; }
+        .chat-user-item:hover { background: #f5f6f6; }
+        .chat-user-item.active { background: #e9edef; border-right: 4px solid var(--wa-header); }
+        
+        .chat-msgs-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
+        
+        /* Bubbles */
+        .msg { padding: 8px 12px; border-radius: 7px; max-width: 70%; font-size: 14px; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.1); line-height: 1.4; }
+        
+        /* Admin Message (Green, Right) */
+        .msg.admin { align-self: flex-end; background: var(--wa-my-msg); color: #111; border-top-left-radius: 7px; border-top-right-radius: 0; margin-right: 5px; }
+        .msg.admin::after { content: ""; position: absolute; top: 0; right: -10px; width: 0; height: 0; border: 10px solid transparent; border-top-color: var(--wa-my-msg); border-left: 0; border-bottom: 0; margin-top: 0; margin-right: 0; }
+        
+        /* User Message (White, Left) */
+        .msg.user { align-self: flex-start; background: var(--wa-their-msg); color: #111; border-top-left-radius: 0; margin-left: 5px; }
+        .msg.user::after { content: ""; position: absolute; top: 0; left: -10px; width: 0; height: 0; border: 10px solid transparent; border-top-color: var(--wa-their-msg); border-right: 0; border-bottom: 0; margin-top: 0; margin-left: 0; transform: scaleX(-1); }
+
+        /* Chat Input Area */
+        .chat-input-area { padding: 10px; background: #f0f2f5; display: flex; align-items: center; gap: 10px; }
+        .chat-input-area input { margin: 0; border-radius: 20px; border: none; padding: 12px 20px; flex: 1; }
+        .chat-input-area button { margin: 0; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; padding: 0; font-size: 20px; }
+
     </style>
 </head>
 <body>
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="auth-screen">
-        <h2 class="text-3xl font-black text-cyan-400 mb-6 italic uppercase tracking-widest">Admin Access</h2>
-        <input type="password" id="adminPass" placeholder="كلمة السر يا حودة" class="p-4 rounded-xl bg-white/5 border border-white/20 outline-none focus:border-cyan-400 text-center mb-4 w-64">
-        <button onclick="login()" class="bg-cyan-500 text-black px-12 py-3 rounded-full font-black hover:bg-white transition uppercase">Entry</button>
+<!-- شاشة تسجيل الدخول -->
+<div id="loginOverlay">
+    <div class="login-box">
+        <h2 style="color:var(--main); margin-bottom:5px;">Elshamaa Pro</h2>
+        <p style="margin-top:0; color:#666; font-size:14px;">نظام الإدارة المركزي</p>
+        <input type="text" id="loginUser" placeholder="اسم المستخدم">
+        <input type="password" id="loginPass" placeholder="كلمة المرور">
+        <button onclick="login()">دخول للنظام 🔐</button>
+        <p style="font-size:12px; margin-top:15px; color:#888;">الافتراضي: admin / 123</p>
+        <button onclick="factoryReset()" class="reset-btn">⚠️ إعادة ضبط النظام</button>
+    </div>
+</div>
+
+<!-- القائمة الجانبية -->
+<aside id="mainSidebar" style="display:none;">
+    <h2>ELSHAMAA</h2>
+    <div class="user-info">
+        <span id="currentUserDisplay">Admin</span><br>
+        <small id="currentRoleDisplay" style="color:var(--green)">Online</small>
     </div>
 
-    <!-- المحتوى الرئيسي -->
-    <div class="max-w-5xl mx-auto pt-10">
-        <div class="flex justify-between items-center mb-12 border-b border-white/10 pb-6">
-            <h1 class="text-4xl font-black text-cyan-400 italic uppercase">Messages Inbox 📩</h1>
-            <div class="text-gray-500 text-sm font-bold uppercase tracking-widest">Mahmoud Dashboard</div>
-        </div>
+    <div class="menu-btn active" data-role="all" onclick="showSection('stats', this)">📊 الإحصائيات</div>
+    <div class="menu-btn" data-role="all" onclick="showSection('orders', this)">💰 الطلبات الحالية <span id="alertBadge" style="background:red;border-radius:50%;padding:2px 6px;font-size:10px;display:none;margin-right:5px;">!</span></div>
+    <div class="menu-btn" data-role="admin,manager" onclick="showSection('archive', this)">🗄️ أرشيف الطلبات</div>
+    <div class="menu-btn" data-role="admin,manager" onclick="showSection('add-product', this)">📦 المخزون والمنتجات</div>
+    <div class="menu-btn" data-role="admin,manager" onclick="showSection('categories', this)">🗂️ إدارة الأقسام</div>
+    <div class="menu-btn" data-role="admin" onclick="showSection('users', this)">👥 إدارة الموظفين</div>
+    <div class="menu-btn" data-role="admin,manager" onclick="showSection('reports', this)">📈 تقارير الأداء</div>
+    <div class="menu-btn" data-role="all" onclick="showSection('messages', this)">💬 واتساب العملاء</div>
+    <div class="menu-btn" data-role="admin" onclick="showSection('logs', this)">📜 سجل النظام</div>
+    
+    <div style="margin-top:auto;">
+        <button onclick="logout()" style="width:100%; background:rgba(255,255,255,0.1); border:none; color:white; padding:10px; cursor:pointer; border-radius:10px;">تسجيل خروج 🚪</button>
+    </div>
+</aside>
 
-        <div id="messages-list" class="grid gap-6">
-            <!-- الرسايل هتنزل هنا -->
-            <p class="text-center text-gray-600">جاري جلب الرسايل من الفايربيز...</p>
+<main id="mainContent" style="display:none;">
+    
+    <!-- 1. Stats -->
+    <div id="stats" class="section active">
+        <h2 style="color:var(--dark)">لوحة القيادة</h2>
+        <div class="stats-grid">
+            <div class="stat-card bg-green"> <p>المبيعات (المحصلة)</p> <h1 id="statRevenue">0</h1> </div>
+            <div class="stat-card bg-blue"> <p>الطلبات النشطة</p> <h1 id="statOrders">0</h1> </div>
+            <div class="stat-card bg-purple"> <p>الطلبات المؤرشفة</p> <h1 id="statArchived">0</h1> </div>
+            <div class="stat-card bg-orange"> <p>عدد الموظفين</p> <h1 id="statUsers">0</h1> </div>
+        </div>
+        <div class="card">
+            <h3>🔥 الأكثر مبيعاً</h3>
+            <div id="topSellersList"></div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    <!-- 2. Active Orders -->
+    <div id="orders" class="section">
+        <div class="card">
+            <h3>الطلبات قيد التنفيذ</h3>
+            <div id="ordersList"></div>
+        </div>
+    </div>
 
-        // الكونفيج بتاعك
-        const firebaseConfig = {
-            apiKey: "AIzaSyCoHTY4vhX-pRbrtjQlUrsRfnG8OGdsOpM",
-            authDomain: "portfolio-7930d.firebaseapp.com",
-            databaseURL: "https://portfolio-7930d-default-rtdb.firebaseio.com",
-            projectId: "portfolio-7930d",
-            storageBucket: "portfolio-7930d.firebasestorage.app",
-            messagingSenderId: "709883262602",
-            appId: "1:709883262602:web:e45438bd2e4f41e73b5f73"
+    <!-- 3. Archive -->
+    <div id="archive" class="section">
+        <div class="card">
+            <h3>🗄️ سجل الطلبات (بحث متقدم)</h3>
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>تصفية حسب الموظف:</label>
+                    <select id="archiveFilterEmp" onchange="renderArchive()">
+                        <option value="">-- كل الموظفين --</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>من تاريخ:</label>
+                    <input type="date" id="archiveFilterFrom" onchange="renderArchive()">
+                </div>
+                <div class="filter-group">
+                    <label>إلى تاريخ:</label>
+                    <input type="date" id="archiveFilterTo" onchange="renderArchive()">
+                </div>
+                <div class="filter-group" style="justify-content: flex-end; flex:0;">
+                    <button class="action-btn" onclick="resetArchiveFilters()" style="padding: 10px; background:#64748b;">إلغاء ❌</button>
+                </div>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>تم بواسطة</th><th>التاريخ</th></tr></thead>
+                    <tbody id="archiveTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Products (UPDATED: Added Description & Discount) -->
+    <div id="add-product" class="section">
+        <div class="card">
+            <h3>إضافة منتج جديد</h3>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <input type="text" id="pName" placeholder="اسم المنتج" style="flex:2">
+                <input type="number" id="pPrice" placeholder="السعر الأساسي" style="flex:1">
+                <input type="number" id="pDiscount" placeholder="السعر بعد الخصم (اختياري)" style="flex:1; border-color:var(--warning)">
+                <input type="number" id="pQty" placeholder="الكمية" style="flex:1">
+            </div>
+            
+            <!-- حقل الوصف الجديد -->
+            <textarea id="pDesc" placeholder="اكتب وصف المنتج وتفاصيله هنا..." rows="3"></textarea>
+            
+            <!-- حقل الصورة -->
+            <input type="text" id="pImg" placeholder="رابط صورة المنتج (https://...)" style="width:100%; direction:ltr;">
+            
+            <div style="display:flex; gap:10px;">
+                <select id="pCategory" onchange="updateSubCatsDropdown()"></select>
+                <select id="pSubCategory"></select>
+            </div>
+            <button class="action-btn" onclick="addProduct()">إضافة للمخزون</button>
+        </div>
+        <div class="card">
+            <h3>📋 جدول المخزون</h3>
+            <div style="overflow-x:auto;">
+                <table id="productsTable">
+                    <thead><tr><th>صورة</th><th>المنتج</th><th>الوصف</th><th>القسم</th><th>السعر</th><th>الكمية</th><th>تحكم</th></tr></thead>
+                    <tbody id="productsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Categories -->
+    <div id="categories" class="section">
+        <div class="card">
+            <h3>إضافة قسم رئيسي</h3>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="newMainCat" placeholder="اسم القسم.." style="flex:1">
+                <button class="action-btn" onclick="addMainCat()">إضافة</button>
+            </div>
+            <div id="mainCatList" style="margin-top:20px;"></div>
+        </div>
+        <div class="card">
+            <h3>إضافة قسم فرعي</h3>
+            <div style="display:flex; gap:10px;">
+                <select id="targetMainCat" style="flex:1"></select>
+                <input type="text" id="newSubCat" placeholder="اسم الفرع.." style="flex:1">
+                <button class="action-btn" onclick="addSubCat()">إضافة</button>
+            </div>
+            <div id="subCatList" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <!-- 6. Users -->
+    <div id="users" class="section">
+        <div class="card">
+            <h3>👥 إضافة موظف جديد</h3>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <input type="text" id="uName" placeholder="الاسم الحقيقي" style="flex:1">
+                <input type="text" id="uUser" placeholder="اسم المستخدم" style="flex:1">
+                <input type="text" id="uPass" placeholder="كلمة المرور" style="flex:1">
+                <select id="uRole" style="flex:1">
+                    <option value="seller">بائع</option>
+                    <option value="manager">مدير</option>
+                    <option value="admin">أدمن</option>
+                </select>
+                <button class="action-btn" onclick="addUser()">إنشاء حساب</button>
+            </div>
+        </div>
+        <div class="card">
+            <h3>قائمة الموظفين</h3>
+            <table id="usersTable">
+                <thead><tr><th>الاسم</th><th>المستخدم</th><th>الصلاحية</th><th>حذف</th></tr></thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 7. Reports -->
+    <div id="reports" class="section">
+        <div class="card">
+            <h3>📈 تقرير الأداء (مفلتر)</h3>
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>اختر الموظف:</label>
+                    <select id="reportFilterEmp" onchange="renderReports()">
+                        <option value="">-- الكل --</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>من تاريخ:</label>
+                    <input type="date" id="reportFilterFrom" onchange="renderReports()">
+                </div>
+                <div class="filter-group">
+                    <label>إلى تاريخ:</label>
+                    <input type="date" id="reportFilterTo" onchange="renderReports()">
+                </div>
+                <div class="filter-group" style="justify-content: flex-end; flex:0;">
+                    <button class="action-btn" onclick="resetReportFilters()" style="padding: 10px; background:#64748b;">إلغاء</button>
+                </div>
+            </div>
+
+            <table id="reportsTable">
+                <thead><tr><th>الموظف</th><th>عدد الطلبات المكتملة</th><th>إجمالي المبيعات المحققة</th></tr></thead>
+                <tbody id="reportsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 8. Messages (WhatsApp Style) -->
+    <div id="messages" class="section">
+        <div class="card" style="padding:0; overflow:hidden;">
+            <!-- Removed standard h3 to make full screen feel -->
+            <div class="chat-layout">
+                <div class="chat-sidebar" id="chatSidebar">
+                    <!-- Users list -->
+                </div>
+                <div class="chat-main">
+                    <div id="chatHeader">
+                        <img src="https://placehold.co/40" style="border-radius:50%">
+                        <div>
+                            <div id="chatHeaderName">اختر محادثة</div>
+                            <small id="chatHeaderStatus" style="font-weight:normal; color:#666;">...</small>
+                        </div>
+                    </div>
+                    <div class="chat-msgs-box" id="adminChatBox"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="adminChatInput" placeholder="اكتب رسالة..." disabled>
+                        <button class="action-btn" id="adminChatBtn" onclick="sendAdminReply()" disabled>➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. Logs -->
+    <div id="logs" class="section">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between;">
+                <h3>📜 سجل النظام</h3>
+                <button class="action-btn" style="background:var(--danger); padding:5px 15px;" onclick="clearLogs()">مسح</button>
+            </div>
+            <table>
+                <thead><tr><th>الوقت</th><th>الموظف</th><th>الحدث</th><th>التفاصيل</th></tr></thead>
+                <tbody id="logsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<!-- نافذة تفاصيل الطلب -->
+<div class="modal-overlay" id="orderDetailModal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
+            <h3 style="margin:0; border:none;">تفاصيل الطلب (الفاتورة)</h3>
+            <button onclick="document.getElementById('orderDetailModal').style.display='none'" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        <div id="orderDetailContent">
+            <!-- التفاصيل ستظهر هنا -->
+        </div>
+        <div style="text-align:left; margin-top:20px;">
+            <button class="action-btn" style="background:#64748b;" onclick="document.getElementById('orderDetailModal').style.display='none'">إغلاق</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Data & Initialization ---
+    const defaultUsers = [{ id: 1, name: "المدير العام", user: "admin", pass: "123", role: "admin" }];
+    const defaultCats = { "تكنولوجيا": ["موبايلات", "لابتوب"], "ملابس": ["رجالي", "حريمي"], "منزل": ["أثاث"] };
+    
+    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg"); 
+    let lastOrderCount = 0;
+    
+    let currentUser = null;
+    let selectedChatUser = null;
+
+    function getData(key, def) { return JSON.parse(localStorage.getItem(key)) || def; }
+    function setData(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+    // --- Login Logic ---
+    function login() {
+        const u = document.getElementById('loginUser').value;
+        const p = document.getElementById('loginPass').value;
+        
+        let userToLogin = null;
+        if(u === "admin" && p === "123") {
+            userToLogin = defaultUsers[0];
+            let users = getData('elshamaaUsers', []);
+            if(!users.find(x => x.user === 'admin')) { users.push(defaultUsers[0]); setData('elshamaaUsers', users); }
+        } else {
+            const users = getData('elshamaaUsers', defaultUsers);
+            const found = users.find(user => user.user === u && user.pass === p);
+            if (found) userToLogin = found;
+        }
+
+        if(userToLogin) {
+            localStorage.setItem('elshamaaSession', JSON.stringify(userToLogin));
+            grantAccess(userToLogin);
+        } else {
+            alert("بيانات خاطئة");
+        }
+    }
+
+    window.addEventListener('load', () => {
+        const session = localStorage.getItem('elshamaaSession');
+        if(session) {
+            grantAccess(JSON.parse(session));
+        }
+    });
+
+    function grantAccess(user) {
+        currentUser = user;
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainSidebar').style.display = 'flex';
+        document.getElementById('mainContent').style.display = 'block';
+        document.getElementById('currentUserDisplay').innerText = user.name;
+        document.getElementById('currentRoleDisplay').innerText = user.role.toUpperCase();
+        setupPermissions(user.role);
+        initSystem();
+    }
+
+    function factoryReset() { if(confirm("هل أنت متأكد؟ سيتم مسح كل شيء!")) { localStorage.clear(); location.reload(); } }
+    
+    function logout() { 
+        localStorage.removeItem('elshamaaSession');
+        location.reload(); 
+    }
+
+    function setupPermissions(role) {
+        document.querySelectorAll('.menu-btn').forEach(btn => {
+            const allowed = btn.getAttribute('data-role');
+            btn.style.display = (allowed === 'all' || allowed.includes(role)) ? 'flex' : 'none';
+        });
+    }
+
+    function initSystem() {
+        renderStats(); renderOrders(); renderArchive(); renderCategoryUI(); renderProducts();
+        populateEmpFilter(); // For both Archive and Reports
+        if(currentUser.role === 'admin') { renderUsers(); renderLogs(); }
+        if(currentUser.role !== 'seller') { renderReports(); }
+        
+        setInterval(() => {
+            checkNewOrders(); 
+            renderChatList();
+            if(selectedChatUser) openChat(selectedChatUser);
+        }, 2000);
+    }
+
+    function checkNewOrders() {
+        const orders = getData('elshamaaOrders', []);
+        const hasPending = orders.some(o => o.status === 'pending' || o.status === 'cancel_requested');
+
+        if(hasPending) {
+            beep.play().catch(e => console.log("Audio requires interaction"));
+            document.getElementById('alertBadge').style.display = 'inline-block';
+        } else {
+            document.getElementById('alertBadge').style.display = 'none';
+        }
+
+        if(orders.length !== lastOrderCount) {
+            lastOrderCount = orders.length;
+            renderOrders(); 
+        }
+    }
+
+    function logAction(action, details) {
+        let logs = getData('elshamaaLogs', []);
+        logs.unshift({ date: new Date().toLocaleString('ar-EG'), user: currentUser.name, action: action, details: details });
+        if(logs.length > 200) logs.pop();
+        setData('elshamaaLogs', logs);
+    }
+
+    // --- Archive & Reports Filters Helper ---
+    function populateEmpFilter() {
+        const users = getData('elshamaaUsers', defaultUsers);
+        const selects = ['archiveFilterEmp', 'reportFilterEmp'];
+        
+        selects.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                const currentVal = el.value;
+                el.innerHTML = '<option value="">-- الجميع --</option>';
+                users.forEach(u => el.innerHTML += `<option value="${u.name}">${u.name}</option>`);
+                el.value = currentVal;
+            }
+        });
+    }
+
+    function renderArchive() {
+        let archive = getData('elshamaaArchive', []);
+        const tbody = document.getElementById('archiveTableBody');
+        tbody.innerHTML = "";
+        
+        const empFilter = document.getElementById('archiveFilterEmp').value;
+        const fromDateStr = document.getElementById('archiveFilterFrom').value;
+        const toDateStr = document.getElementById('archiveFilterTo').value;
+        
+        const statusAr = {
+            'completed': 'مكتمل ✅',
+            'cancelled': 'ملغي ❌',
+            'returned': 'مرتجع ↩️',
+            'shipped': 'تم الشحن 🚚',
+            'pending': 'قيد الانتظار ⏳'
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        archive.sort((a,b) => (b.archivedTimestamp || 0) - (a.archivedTimestamp || 0));
 
-        // وظيفة تسجيل الدخول
-        window.login = function() {
-            const p = document.getElementById('adminPass').value;
-            if(p === "123456") { // الباسورد بتاعك
-                document.getElementById('auth-screen').style.display = 'none';
-                loadData();
-            } else {
-                alert("الباسورد غلط يا حودة، ركز!");
+        const filtered = archive.filter(o => {
+            let pass = true;
+            if (empFilter && o.processedBy !== empFilter) pass = false;
+            if (fromDateStr || toDateStr) {
+                let orderDate = o.archivedTimestamp ? new Date(o.archivedTimestamp) : new Date(o.archivedDate);
+                orderDate.setHours(0,0,0,0);
+                if (fromDateStr) {
+                    let fromD = new Date(fromDateStr);
+                    fromD.setHours(0,0,0,0);
+                    if (orderDate < fromD) pass = false;
+                }
+                if (toDateStr) {
+                    let toD = new Date(toDateStr);
+                    toD.setHours(0,0,0,0);
+                    if (orderDate > toD) pass = false;
+                }
             }
+            return pass;
+        });
+
+        if(filtered.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>لا توجد نتائج مطابقة</td></tr>";
         }
 
-        function loadData() {
-            const msgRef = ref(db, 'messages');
-            onValue(msgRef, (snapshot) => {
-                const list = document.getElementById('messages-list');
-                list.innerHTML = "";
-                const data = snapshot.val();
+        filtered.forEach(o => {
+            let displayStatus = statusAr[o.status] || o.status;
+            tbody.innerHTML += `
+                <tr class="clickable-row" onclick="openOrderDetailModal(${o.id}, 'archive')">
+                    <td>#${o.id}</td>
+                    <td>${o.user?.name || 'عميل'}</td>
+                    <td style="color:var(--green)">${o.total || o.price}</td>
+                    <td>${displayStatus}</td>
+                    <td>${o.processedBy || '-'}</td>
+                    <td><small>${o.archivedDate}</small></td>
+                </tr>`;
+        });
+        document.getElementById('statArchived').innerText = filtered.length;
+    }
 
-                if(!data) {
-                    list.innerHTML = "<div class='text-center p-10 glass rounded-3xl text-gray-500 font-bold'>مفيش رسايل لسه يا بطل.. الموقع فاضي!</div>";
-                    return;
+    function resetArchiveFilters() {
+        document.getElementById('archiveFilterEmp').value = "";
+        document.getElementById('archiveFilterFrom').value = "";
+        document.getElementById('archiveFilterTo').value = "";
+        renderArchive();
+    }
+
+    // --- Reports Logic ---
+    function renderReports() {
+        const archive = getData('elshamaaArchive', []);
+        const tbody = document.getElementById('reportsTableBody');
+        tbody.innerHTML = "";
+        
+        const empFilter = document.getElementById('reportFilterEmp').value;
+        const fromDateStr = document.getElementById('reportFilterFrom').value;
+        const toDateStr = document.getElementById('reportFilterTo').value;
+
+        let data = {};
+        
+        archive.forEach(o => {
+            let pass = true;
+            if (empFilter && o.processedBy !== empFilter) pass = false;
+            
+            if (fromDateStr || toDateStr) {
+                let orderDate = o.archivedTimestamp ? new Date(o.archivedTimestamp) : new Date(o.archivedDate);
+                orderDate.setHours(0,0,0,0);
+                if (fromDateStr) {
+                    let fromD = new Date(fromDateStr);
+                    fromD.setHours(0,0,0,0);
+                    if (orderDate < fromD) pass = false;
                 }
+                if (toDateStr) {
+                    let toD = new Date(toDateStr);
+                    toD.setHours(0,0,0,0);
+                    if (orderDate > toD) pass = false;
+                }
+            }
 
-                Object.keys(data).reverse().forEach(id => {
-                    const m = data[id];
-                    const div = document.createElement('div');
-                    div.className = "msg-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4";
-                    
-                    // تأكدنا هنا إننا بننادي على m.phone اللي مبعوت من الـ index.html
-                    div.innerHTML = `
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-2">
-                                <span class="bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase text-xs">New</span>
-                                <h3 class="text-2xl font-black text-white capitalize">${m.name}</h3>
-                            </div>
-                            
-                            <div class="flex flex-wrap gap-4 mt-3">
-                                <a href="tel:${m.phone}" class="text-green-400 font-bold flex items-center gap-2 hover:underline">
-                                    <span>📞</span> ${m.phone || 'بدون رقم'}
-                                </a>
-                                <a href="https://wa.me/${m.phone}" target="_blank" class="text-emerald-500 font-bold flex items-center gap-2 hover:underline">
-                                    <span>💬</span> واتساب
-                                </a>
-                            </div>
+            if (pass) {
+                let n = o.processedBy || "غير معروف";
+                let v = parseFloat(o.total || o.price || 0);
+                if(!data[n]) data[n] = {c:0, t:0};
+                if(o.status === 'completed') { data[n].c++; data[n].t += v; }
+            }
+        });
 
-                            <p class="text-gray-400 mt-4 text-lg bg-white/5 p-4 rounded-xl border border-white/5 italic">
-                                "${m.message}"
-                            </p>
-                            
-                            <span class="text-[10px] text-gray-600 mt-4 block font-bold uppercase tracking-widest">
-                                Received on: ${m.date || 'غير معروف'}
-                            </span>
-                        </div>
-                        
-                        <button onclick="deleteMessage('${id}')" class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-6 py-2 rounded-full text-xs font-black transition uppercase">
-                            Delete
-                        </button>
-                    `;
-                    list.appendChild(div);
-                });
+        if (Object.keys(data).length === 0) {
+            tbody.innerHTML = "<tr><td colspan='3' style='text-align:center'>لا توجد بيانات لهذا الفلتر</td></tr>";
+        } else {
+            Object.keys(data).forEach(k => {
+                tbody.innerHTML += `<tr><td>${k}</td><td>${data[k].c}</td><td style="color:var(--green)">${data[k].t} ج.م</td></tr>`;
             });
         }
+    }
 
-        // وظيفة الحذف
-        window.deleteMessage = function(id) {
-            if(confirm("عايز تمسح رسالة العميل ده نهائياً؟")) {
-                remove(ref(db, 'messages/' + id));
+    function resetReportFilters() {
+        document.getElementById('reportFilterEmp').value = "";
+        document.getElementById('reportFilterFrom').value = "";
+        document.getElementById('reportFilterTo').value = "";
+        renderReports();
+    }
+
+    // --- Order Details Modal ---
+    function openOrderDetailModal(id, source = 'active') {
+        let order;
+        if(source === 'active') {
+            order = getData('elshamaaOrders', []).find(o => o.id == id);
+        } else {
+            order = getData('elshamaaArchive', []).find(o => o.id == id);
+        }
+        
+        if (!order) return;
+
+        let itemsHtml = "";
+        if (order.items && order.items.length > 0) {
+            itemsHtml = `<ul style="padding-right:20px; margin:5px 0;">`;
+            order.items.forEach(i => {
+                // Show desc if exists in order items (future proofing)
+                itemsHtml += `<li><strong>${i.name}</strong> - ${i.price} ج.م`;
+                if(i.desc) itemsHtml += `<br><small style="color:#666">${i.desc}</small>`;
+                itemsHtml += `</li>`;
+            });
+            itemsHtml += `</ul>`;
+        } else { itemsHtml = `<p>منتج واحد: ${order.productName || 'غير محدد'}</p>`; }
+
+        const statusAr = {
+            'completed': 'مكتمل ✅',
+            'cancelled': 'ملغي ❌',
+            'returned': 'مرتجع ↩️',
+            'shipped': 'تم الشحن 🚚',
+            'pending': 'قيد الانتظار ⏳',
+            'cancel_requested': 'طلب إلغاء من العميل ⚠️'
+        };
+        let statusDisplay = statusAr[order.status] || order.status;
+
+        const content = document.getElementById('orderDetailContent');
+        content.innerHTML = `
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div><strong>رقم الطلب:</strong> <span style="color:var(--main)">#${order.id}</span></div>
+                <div><strong>الحالة:</strong> <span>${statusDisplay}</span></div>
+                <div><strong>العميل:</strong> <span>${order.user?.name}</span></div>
+                <div><strong>الهاتف:</strong> <span>${order.user?.phone}</span></div>
+            </div>
+            <hr style="margin:10px 0; border:0; border-top:1px solid #eee;">
+            <div><strong>العنوان:</strong> <p style="background:#f9f9f9; padding:5px;">${order.address || 'لا يوجد'}</p></div>
+            <div><strong>المنتجات:</strong> ${itemsHtml}</div>
+            
+            ${order.clientCancelReason ? `
+                <div style="background:#fff3cd; color:#856404; padding:10px; margin-top:10px; border-radius:5px; border:1px solid #ffeeba;">
+                    <strong>⚠️ رسالة العميل (سبب الإلغاء):</strong><br>
+                    ${order.clientCancelReason}
+                </div>` : ''}
+
+            ${order.archiveNote ? `<div style="background:#fee2e2; color:#b91c1c; padding:10px; margin-top:10px; border-radius:5px;"><strong>سبب الإلغاء/الارتجاع (إداري):</strong> ${order.archiveNote}</div>` : ''}
+             
+            <h3 style="text-align:left; color:var(--green)">الإجمالي: ${order.total || order.price} ج.م</h3>
+        `;
+        document.getElementById('orderDetailModal').style.display = 'flex';
+    }
+
+    // --- Categories Management ---
+    function renderCategoryUI() {
+        const cats = getData('elshamaaCategories', defaultCats);
+        const pCat = document.getElementById('pCategory');
+        pCat.innerHTML = Object.keys(cats).map(c => `<option value="${c}">${c}</option>`).join('');
+        updateSubCatsDropdown();
+        const mainList = document.getElementById('mainCatList');
+        const targetList = document.getElementById('targetMainCat');
+        const subList = document.getElementById('subCatList');
+        mainList.innerHTML = ""; targetList.innerHTML = ""; subList.innerHTML = "";
+        Object.keys(cats).forEach(key => {
+            mainList.innerHTML += `<div class="cat-item"><strong>${key}</strong><button class="delete-btn" onclick="delMainCat('${key}')">حذف</button></div>`;
+            targetList.innerHTML += `<option value="${key}">${key}</option>`;
+            if(cats[key].length > 0) {
+                cats[key].forEach(sub => {
+                    subList.innerHTML += `<div class="cat-item"><span>${key} > <strong>${sub}</strong></span><button class="delete-btn" onclick="delSubCat('${key}','${sub}')">حذف</button></div>`;
+                });
+            }
+        });
+    }
+    function updateSubCatsDropdown() {
+        const cats = getData('elshamaaCategories', defaultCats);
+        const main = document.getElementById('pCategory').value;
+        const sub = document.getElementById('pSubCategory');
+        sub.innerHTML = (cats[main] || []).map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+    function addMainCat() { let val = document.getElementById('newMainCat').value; if(val){ let cats = getData('elshamaaCategories', defaultCats); if(!cats[val]){ cats[val]=[]; setData('elshamaaCategories', cats); logAction('إضافة قسم', val); renderCategoryUI(); document.getElementById('newMainCat').value=""; } } }
+    function delMainCat(key) { if(confirm(`حذف القسم "${key}"؟`)){ let cats=getData('elshamaaCategories', defaultCats); delete cats[key]; setData('elshamaaCategories', cats); renderCategoryUI(); } }
+    function addSubCat() { let main=document.getElementById('targetMainCat').value; let sub=document.getElementById('newSubCat').value; if(sub){ let cats=getData('elshamaaCategories', defaultCats); cats[main].push(sub); setData('elshamaaCategories', cats); renderCategoryUI(); document.getElementById('newSubCat').value=""; } }
+    function delSubCat(m,s) { if(confirm("حذف؟")){ let cats=getData('elshamaaCategories', defaultCats); cats[m]=cats[m].filter(x=>x!==s); setData('elshamaaCategories', cats); renderCategoryUI(); } }
+
+    // --- Products (Modified for Desc & Discount) ---
+    function addProduct() {
+        const name = document.getElementById('pName').value;
+        const price = document.getElementById('pPrice').value;
+        const discount = document.getElementById('pDiscount').value; // New Field
+        const qty = document.getElementById('pQty').value;
+        const cat = document.getElementById('pCategory').value;
+        const sub = document.getElementById('pSubCategory').value;
+        const desc = document.getElementById('pDesc').value; // New Field
+        const img = document.getElementById('pImg').value || "https://placehold.co/100?text=No+Img"; 
+        
+        if(!name || !price) { alert("يرجى إدخال الاسم والسعر"); return; }
+        
+        let prods = getData('elshamaaProducts', []);
+        
+        // Create Product Object with new fields
+        let newProd = { 
+            id: Date.now(), 
+            name, 
+            price, 
+            discountPrice: discount, // Save discount
+            quantity: qty, 
+            category: cat, 
+            subCategory: sub, 
+            description: desc, // Save desc
+            img: img, 
+            sold: 0 
+        };
+
+        prods.push(newProd);
+        setData('elshamaaProducts', prods);
+        logAction('إضافة منتج', name);
+        
+        // Clear fields
+        document.getElementById('pName').value = "";
+        document.getElementById('pPrice').value = "";
+        document.getElementById('pDiscount').value = "";
+        document.getElementById('pQty').value = "";
+        document.getElementById('pDesc').value = "";
+        document.getElementById('pImg').value = "";
+        
+        renderProducts();
+    }
+
+    function renderProducts() {
+        let prods = getData('elshamaaProducts', []);
+        let tbody = document.getElementById('productsTableBody');
+        tbody.innerHTML = "";
+        prods.forEach((p, i) => { 
+            // Handle Price Display with Discount
+            let priceDisplay = `${p.price} ج.م`;
+            if(p.discountPrice && p.discountPrice > 0) {
+                priceDisplay = `<span class="old-price">${p.price}</span> <span class="new-price">${p.discountPrice} ج.م</span>`;
+            }
+
+            // Shorten description for table
+            let descShort = p.description ? (p.description.substring(0, 30) + "...") : "-";
+
+            tbody.innerHTML += `<tr>
+                <td><img src="${p.img || 'https://placehold.co/50'}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;"></td>
+                <td>${p.name}</td>
+                <td style="font-size:12px; color:#666">${descShort}</td>
+                <td>${p.category}</td>
+                <td>${priceDisplay}</td>
+                <td>${p.quantity} <button class="action-btn" style="padding:2px 8px; font-size:12px;" onclick="changeStock(${p.id})">تعديل</button></td>
+                <td><button onclick="delProd(${i})" style="color:red;border:none;background:none;cursor:pointer">🗑️</button></td>
+            </tr>`; 
+        });
+    }
+
+    function changeStock(id) {
+        let amount = prompt("أدخل الكمية التي تريد إضافتها (أو اكتب رقم سالب للخصم):");
+        if(amount && !isNaN(amount)) {
+            let prods = getData('elshamaaProducts', []);
+            let p = prods.find(x => x.id == id);
+            if(p) {
+                p.quantity = parseInt(p.quantity) + parseInt(amount);
+                if(p.quantity < 0) p.quantity = 0;
+                setData('elshamaaProducts', prods);
+                renderProducts();
+                logAction('تعديل مخزون', `${p.name} إلى ${p.quantity}`);
             }
         }
-    </script>
+    }
+    function delProd(i) { let prods = getData('elshamaaProducts', []); prods.splice(i, 1); setData('elshamaaProducts', prods); renderProducts(); }
+
+    // --- Orders ---
+    function renderOrders() {
+        const orders = getData('elshamaaOrders', []);
+        const list = document.getElementById('ordersList');
+        list.innerHTML = orders.length ? "" : "<p style='text-align:center;color:#999'>لا توجد طلبات نشطة</p>";
+        orders.reverse().forEach(o => {
+            let items = o.items ? o.items.map(i=>i.name).join('+') : o.productName;
+            
+            let firstProdImg = "https://placehold.co/50";
+            if(o.items && o.items[0] && o.items[0].img) firstProdImg = o.items[0].img;
+
+            let options = '';
+            let extraStyle = '';
+
+            if(o.status === 'pending') {
+                options = `
+                    <button class="action-btn" onclick="updateOrderStatus(${o.id}, 'shipped')">شحن 🚚</button>
+                    <button class="action-btn" style="background:var(--danger)" onclick="updateOrderStatus(${o.id}, 'cancelled')">إلغاء ❌</button>
+                `;
+            } else if (o.status === 'shipped') {
+                options = `
+                    <button class="action-btn" onclick="updateOrderStatus(${o.id}, 'completed')">تم التسليم ✅</button>
+                    <button class="action-btn" style="background:var(--danger)" onclick="updateOrderStatus(${o.id}, 'returned')">مرتجع ↩️</button>
+                `;
+            } else if (o.status === 'cancel_requested') {
+                extraStyle = "border-right: 5px solid #f59e0b; background:#fffcf2;";
+                options = `
+                    <div style="background:#fff3cd; color:#856404; padding:8px; margin-bottom:10px; border-radius:5px; border:1px solid #ffeeba; font-size:13px;">
+                         <strong>⚠️ سبب طلب العميل للإلغاء:</strong><br>
+                         ${o.clientCancelReason || 'لم يذكر سبباً'}
+                    </div>
+                    <button class="action-btn" onclick="updateOrderStatus(${o.id}, 'cancelled')">موافقة على الإلغاء</button>
+                    <button class="action-btn" style="background:var(--danger)" onclick="updateOrderStatus(${o.id}, 'shipped')">رفض (وشحن)</button>
+                `;
+            }
+
+            list.innerHTML += `
+                <div class="order-card" style="${extraStyle}">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center;">
+                             <strong>${o.user?.name || 'عميل'}</strong>
+                             ${o.status === 'cancel_requested' ? '<span class="badge" style="background:#f59e0b; margin-right:5px;">طلب إلغاء</span>' : ''}
+                        </div>
+                        <span style="color:var(--green)">${o.total || o.price} ج.م</span>
+                    </div>
+                    <div style="display:flex; align-items:center; margin-top:5px;">
+                         <img src="${firstProdImg}" class="prod-thumb">
+                         <p style="font-size:13px; margin:0 5px;">${items}</p>
+                    </div>
+                    <div style="margin-top:10px;">
+                        ${options}
+                        <button class="action-btn" style="background:#64748b" onclick="openOrderDetailModal(${o.id})">تفاصيل 👁️</button>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('statOrders').innerText = orders.length;
+    }
+
+    function updateOrderStatus(id, status) {
+        let orders = getData('elshamaaOrders', []);
+        let idx = orders.findIndex(o => o.id == id);
+        if(idx === -1) return;
+
+        let note = "";
+        let order = orders[idx];
+        
+        if(order.status === 'cancel_requested' && status === 'cancelled') {
+             note = "تمت الموافقة على طلب العميل: " + (order.clientCancelReason || "");
+        } else if(status === 'cancelled' || status === 'returned') {
+            note = prompt("من فضلك اكتب سبب الإلغاء أو الارتجاع:");
+            if(!note) return; 
+        }
+
+        if(status === 'completed' || status === 'cancelled' || status === 'returned') {
+            let archive = getData('elshamaaArchive', []);
+            order.status = status;
+            order.archiveNote = note; 
+            order.archivedDate = new Date().toLocaleString('ar-EG');
+            order.archivedTimestamp = Date.now();
+            order.processedBy = currentUser.name;
+            archive.push(order);
+            orders.splice(idx, 1);
+            setData('elshamaaArchive', archive);
+            setData('elshamaaOrders', orders);
+            renderArchive();
+        } else {
+            order.status = status;
+            setData('elshamaaOrders', orders);
+        }
+        renderOrders(); renderStats(); renderReports();
+    }
+
+    // --- Users ---
+    function addUser() {
+        const name = document.getElementById('uName').value;
+        const user = document.getElementById('uUser').value;
+        const pass = document.getElementById('uPass').value;
+        const role = document.getElementById('uRole').value;
+        if(!name || !user) return;
+        let users = getData('elshamaaUsers', defaultUsers);
+        users.push({ id: Date.now(), name, user, pass, role });
+        setData('elshamaaUsers', users); renderUsers(); populateEmpFilter();
+        document.getElementById('uUser').value = "";
+    }
+    function renderUsers() {
+        const users = getData('elshamaaUsers', defaultUsers);
+        const tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = "";
+        users.forEach((u, idx) => { tbody.innerHTML += `<tr><td>${u.name}</td><td>${u.user}</td><td><span class="badge bg-badge-gray">${u.role}</span></td><td>${u.role!=='admin'?`<button onclick="delUser(${idx})" style="color:red;border:none;background:none;cursor:pointer">❌</button>`:''}</td></tr>`; });
+        document.getElementById('statUsers').innerText = users.length;
+    }
+    function delUser(idx) { if(confirm("حذف؟")) { let users=getData('elshamaaUsers',defaultUsers); users.splice(idx,1); setData('elshamaaUsers',users); renderUsers(); populateEmpFilter(); } }
+
+
+    // --- Chat Logic (WhatsApp Style Updated) ---
+    function renderChatList() {
+        const chats = getData('elshamaaChats', {});
+        const sidebar = document.getElementById('chatSidebar');
+        sidebar.innerHTML = "";
+        Object.keys(chats).forEach(phone => {
+            let msgs = chats[phone];
+            let last = msgs[msgs.length-1].text;
+            sidebar.innerHTML += `
+                <div class="chat-user-item ${selectedChatUser===phone?'active':''}" onclick="openChat('${phone}')">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${phone}</strong>
+                        <small style="color:#999">الان</small>
+                    </div>
+                    <div style="font-size:12px; color:#666; overflow:hidden; height:18px; white-space:nowrap; text-overflow:ellipsis;">${last}</div>
+                </div>`;
+        });
+    }
+
+    function openChat(phone) {
+        selectedChatUser = phone;
+        document.getElementById('chatHeaderName').innerText = phone;
+        document.getElementById('chatHeaderStatus').innerText = "متصل الآن";
+        document.getElementById('adminChatInput').disabled = false;
+        document.getElementById('adminChatBtn').disabled = false;
+        
+        const chats = getData('elshamaaChats', {});
+        const msgs = chats[phone] || [];
+        const box = document.getElementById('adminChatBox');
+        box.innerHTML = "";
+        msgs.forEach(m => {
+            box.innerHTML += `<div class="msg ${m.sender}">${m.text}</div>`;
+        });
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function sendAdminReply() {
+        const txt = document.getElementById('adminChatInput').value;
+        if(!txt || !selectedChatUser) return;
+        let chats = getData('elshamaaChats', {});
+        chats[selectedChatUser].push({ sender: 'admin', text: txt, time: Date.now() });
+        setData('elshamaaChats', chats);
+        document.getElementById('adminChatInput').value = "";
+        openChat(selectedChatUser);
+    }
+
+    // --- Utils ---
+    function renderStats() {
+        const prods = getData('elshamaaProducts', []);
+        const list = document.getElementById('topSellersList');
+        list.innerHTML = "";
+        [...prods].sort((a,b)=>(b.sold||0)-(a.sold||0)).slice(0,5).forEach((p,i)=>{
+            if((p.sold||0)>0) list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee;">${i+1}. ${p.name} (${p.sold} بيع)</div>`;
+        });
+        const archive = getData('elshamaaArchive', []);
+        let rev = 0; archive.forEach(a => { if(a.status === 'completed') rev += parseFloat(a.total || 0); });
+        document.getElementById('statRevenue').innerText = rev;
+    }
+    function renderLogs() {
+        const logs = getData('elshamaaLogs', []);
+        const tbody = document.getElementById('logsTableBody');
+        tbody.innerHTML = "";
+        logs.forEach(l => tbody.innerHTML += `<tr><td><small>${l.date}</small></td><td>${l.user}</td><td style="color:var(--main)">${l.action}</td><td>${l.details}</td></tr>`);
+    }
+    function clearLogs() { if(confirm("مسح؟")) { setData('elshamaaLogs',[]); renderLogs(); } }
+    function showSection(id, btn) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if(id === 'users') renderUsers(); if(id === 'logs') renderLogs(); if(id === 'reports') renderReports();
+    }
+
+</script>
 </body>
 </html>
