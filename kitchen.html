@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المطبخ - elshamaa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { 
+            --bg: #0f1011; 
+            --card: #1c1e21; 
+            --primary: #d32f2f; 
+            --warning: #ffa000; 
+            --success: #388e3c; 
+            --text-main: #ffffff;
+            --text-sub: #b0b3b8;
+        }
+
+        body { 
+            font-family: 'Tajawal', sans-serif; 
+            background: var(--bg); 
+            color: var(--text-main); 
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* حاوية الشاشة الرئيسية */
+        #screen-table {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0 20px;
+        }
+
+        /* العنوان */
+        .header { 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: var(--card);
+            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .header h1 { margin: 0; font-size: 2.2rem; font-weight: 900; color: var(--primary); }
+        #clock { font-size: 1.5rem; font-weight: 500; color: var(--text-sub); }
+
+        /* منطقة التمرير */
+        .tables-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 10px;
+            scrollbar-width: thin;
+        }
+
+        /* شبكة الطلبات - تعديل هنا للكمبيوتر */
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); /* تكبير الحجم الأدنى للكرت */
+            gap: 25px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* تصميم التذكرة (Ticket) */
+        .ticket { 
+            background: var(--card); 
+            border-radius: 15px; 
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #333;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        .ticket:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+
+        /* ألوان حالات الطلب */
+        .ticket.new { border-top: 10px solid var(--primary); }
+        .ticket.cooking { border-top: 10px solid var(--warning); }
+        .ticket.ready { border-top: 10px solid var(--success); }
+
+        /* رأس التذكرة */
+        .ticket-header { 
+            background: rgba(255,255,255,0.05);
+            padding: 15px 20px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        .table-num { font-size: 1.8rem; font-weight: 900; color: #fff; }
+        .order-id { font-size: 1rem; color: var(--text-sub); background: #000; padding: 4px 10px; border-radius: 5px; }
+
+        /* جسم التذكرة */
+        .ticket-body { padding: 20px; flex: 1; }
+        .item-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 12px 0; 
+            border-bottom: 1px solid #333; 
+        }
+        .item-name { font-size: 1.4rem; font-weight: 700; color: #fff; }
+        .item-qty { font-size: 1.6rem; font-weight: 900; color: var(--warning); background: rgba(245, 127, 23, 0.1); padding: 2px 12px; border-radius: 8px; }
+
+        /* الفوتر (الوقت والربح) */
+        .ticket-footer { 
+            padding: 15px 20px; 
+            background: rgba(0,0,0,0.2);
+            border-top: 1px dashed #444;
+        }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .timer { font-weight: bold; font-size: 1.2rem; }
+        
+        /* الأزرار */
+        .actions { padding: 15px; display: flex; gap: 10px; }
+        .btn { 
+            flex: 1; 
+            padding: 15px; 
+            border: none; 
+            color: white; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.2s;
+        }
+        .btn:active { transform: scale(0.95); }
+
+        /* شاشة القفل */
+        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        #lock-screen.active { display: flex; }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .delayed { color: #ff4444 !important; animation: blink 1s infinite; }
+
+        /* التجاوب مع الموبايل */
+        @media (max-width: 600px) {
+            .table-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="screen-table">
+        <div id="lock-screen">
+            <i class="fas fa-lock" style="font-size:80px; color:var(--primary); margin-bottom:20px;"></i>
+            <h1 style="font-size: 3rem;">النظام مغلق</h1>
+        </div>
+
+        <div class="header">
+            <div>
+                <h1>مطبخ  elshamaa</h1>
+                <small style="color:var(--text-sub)">نظام إدارة الطلبات المباشر</small>
+            </div>
+            <div id="clock">00:00:00</div>
+        </div>
+
+        <div class="tables-scroll-area">
+            <div class="table-grid" id="orders-container">
+                <!-- الطلبات ستظهر هنا -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        const firebaseConfig = {
+             apiKey: "AIzaSyDArRMLPNgFZOcaCYNOtL1YWTIBVtzN638",
+  authDomain: "farghaly-4e65b.firebaseapp.com",
+  databaseURL: "https://farghaly-4e65b-default-rtdb.firebaseio.com",
+  projectId: "farghaly-4e65b",
+  storageBucket: "farghaly-4e65b.firebasestorage.app",
+  messagingSenderId: "549106402224",
+  appId: "1:549106402224:web:3a963a0478e78ce56dcc75",
+  measurementId: "G-EZQGCQP2JW"
+};
+        
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // الساعة
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('ar-EG');
+        }, 1000);
+
+        // الاستماع لحالة القفل
+        onValue(ref(db, 'config'), (snap) => {
+            const conf = snap.val();
+            if(conf && conf.locked) document.getElementById('lock-screen').classList.add('active');
+            else document.getElementById('lock-screen').classList.remove('active');
+        });
+
+        // الاستماع للطلبات
+        onValue(ref(db, 'orders'), (snap) => {
+            const data = snap.val();
+            const container = document.getElementById('orders-container');
+            
+            if (!data) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:100px; opacity:0.3; font-size:2rem;">لا توجد طلبات نشطة حالياً</div>';
+                return;
+            }
+
+            const activeOrders = Object.entries(data)
+                .map(([key, value]) => ({ ...value, key }))
+                .filter(o => o.status !== 'paid' && o.status !== 'served')
+                .sort((a, b) => b.id - a.id);
+
+            renderOrders(activeOrders);
+        });
+
+        function renderOrders(orders) {
+            const container = document.getElementById('orders-container');
+            
+            container.innerHTML = orders.map(o => {
+                const items = o.items || [];
+                const orderIdDisplay = o.orderNum || "0";
+
+                let statusHTML = '';
+                let statusClass = '';
+
+                if (o.status === 'pending') {
+                    statusClass = 'new';
+                    statusHTML = `<button class="btn" style="background:var(--primary)" onclick="updateStatus('${o.key}', 'cooking')">إستلام الطلب <i class="fas fa-fire"></i></button>`;
+                } else if (o.status === 'cooking') {
+                    statusClass = 'cooking';
+                    statusHTML = `<button class="btn" style="background:var(--warning); color:#000" onclick="updateStatus('${o.key}', 'ready')">جهز الآن <i class="fas fa-check-circle"></i></button>`;
+                } else if (o.status === 'ready') {
+                    statusClass = 'ready';
+                    statusHTML = `<button class="btn" style="background:var(--success)" onclick="updateStatus('${o.key}', 'served')">تم التوصيل <i class="fas fa-user-check"></i></button>`;
+                }
+
+                return `
+                <div class="ticket ${statusClass}">
+                    <div class="ticket-header">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <span class="table-num"><i class="fas fa-utensils"></i> طاولة ${o.tableId || '?'}</span>
+                                <!-- السطر الجديد المضاف لظهور اسم الويتر -->
+                                <div style="font-size: 13px; color: #fbbf24; margin-top: 5px; font-weight: bold;">
+                                    <i class="fas fa-user-edit"></i> الويتر: ${o.user || 'غير معروف'}
+                                </div>
+                            </div>
+                            <span class="order-id">#${orderIdDisplay}</span>
+                        </div>
+                    </div>
+
+                    <div class="ticket-body">
+                        ${items.map(i => `
+                            <div class="item-row">
+                                <span class="item-name">${i.name}</span>
+                                <span class="item-qty">x${i.qty}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="ticket-footer">
+                        <div class="info-row">
+                            <span class="timer live-timer" data-start="${o.timestamp || o.id}">
+                                <i class="fas fa-clock"></i> 00:00
+                            </span>
+                            <span style="font-weight:bold; color:var(--text-sub)">${o.time || ''}</span>
+                        </div>
+                        <div class="info-row" style="margin-top:10px; font-size:1.1rem;">
+                            <span>الإجمالي: ${o.total} ج.م</span>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        ${statusHTML}
+                    </div>
+                </div>
+                `;
+            }).join('');
+            
+            updateTimers();
+        }
+
+        window.updateStatus = (key, status) => {
+            update(ref(db, `orders/${key}`), { status: status });
+        };
+
+        function updateTimers() {
+            const now = Date.now();
+            document.querySelectorAll('.live-timer').forEach(el => {
+                const start = parseInt(el.getAttribute('data-start'));
+                const diff = Math.floor((now - start) / 1000);
+                const m = Math.floor(diff / 60);
+                const s = diff % 60;
+                el.innerHTML = `<i class="fas fa-clock"></i> منذ ${m}:${s < 10 ? '0' : ''}${s}`;
+                
+                if (m >= 15) el.classList.add('delayed');
+            });
+        }
+        setInterval(updateTimers, 1000);
+
+        // حماية الصفحة
+        document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+</html>
