@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Mahmoud Admin</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { background-color: #0a0a0a; color: white; font-family: 'Cairo', sans-serif; padding: 20px; }
+        .msg-card { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 20px; 
+            padding: 25px; 
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+        .msg-card:hover { border-color: #00f2fe; background: rgba(255, 255, 255, 0.05); }
+        #auth-screen {
+            position: fixed; inset: 0; background: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .neon-border { border: 1px solid #00f2fe; box-shadow: 0 0 15px rgba(0, 242, 254, 0.2); }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة تسجيل الدخول -->
+    <div id="auth-screen">
+        <h2 class="text-3xl font-black text-cyan-400 mb-6 italic uppercase tracking-widest">Admin Access</h2>
+        <input type="password" id="adminPass" placeholder="كلمة السر يا حودة" class="p-4 rounded-xl bg-white/5 border border-white/20 outline-none focus:border-cyan-400 text-center mb-4 w-64">
+        <button onclick="login()" class="bg-cyan-500 text-black px-12 py-3 rounded-full font-black hover:bg-white transition uppercase">Entry</button>
+    </div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="max-w-5xl mx-auto pt-10">
+        <div class="flex justify-between items-center mb-12 border-b border-white/10 pb-6">
+            <h1 class="text-4xl font-black text-cyan-400 italic uppercase">Messages Inbox 📩</h1>
+            <div class="text-gray-500 text-sm font-bold uppercase tracking-widest">Mahmoud Dashboard</div>
+        </div>
+
+        <div id="messages-list" class="grid gap-6">
+            <!-- الرسايل هتنزل هنا -->
+            <p class="text-center text-gray-600">جاري جلب الرسايل من الفايربيز...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // الكونفيج بتاعك
+        const firebaseConfig = {
+            apiKey: "AIzaSyCoHTY4vhX-pRbrtjQlUrsRfnG8OGdsOpM",
+            authDomain: "portfolio-7930d.firebaseapp.com",
+            databaseURL: "https://portfolio-7930d-default-rtdb.firebaseio.com",
+            projectId: "portfolio-7930d",
+            storageBucket: "portfolio-7930d.firebasestorage.app",
+            messagingSenderId: "709883262602",
+            appId: "1:709883262602:web:e45438bd2e4f41e73b5f73"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // وظيفة تسجيل الدخول
+        window.login = function() {
+            const p = document.getElementById('adminPass').value;
+            if(p === "123456") { // الباسورد بتاعك
+                document.getElementById('auth-screen').style.display = 'none';
+                loadData();
+            } else {
+                alert("الباسورد غلط يا حودة، ركز!");
+            }
+        }
+
+        function loadData() {
+            const msgRef = ref(db, 'messages');
+            onValue(msgRef, (snapshot) => {
+                const list = document.getElementById('messages-list');
+                list.innerHTML = "";
+                const data = snapshot.val();
+
+                if(!data) {
+                    list.innerHTML = "<div class='text-center p-10 glass rounded-3xl text-gray-500 font-bold'>مفيش رسايل لسه يا بطل.. الموقع فاضي!</div>";
+                    return;
+                }
+
+                Object.keys(data).reverse().forEach(id => {
+                    const m = data[id];
+                    const div = document.createElement('div');
+                    div.className = "msg-card flex flex-col md:flex-row justify-between items-start md:items-center gap-4";
+                    
+                    // تأكدنا هنا إننا بننادي على m.phone اللي مبعوت من الـ index.html
+                    div.innerHTML = `
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="bg-cyan-500 text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase text-xs">New</span>
+                                <h3 class="text-2xl font-black text-white capitalize">${m.name}</h3>
+                            </div>
+                            
+                            <div class="flex flex-wrap gap-4 mt-3">
+                                <a href="tel:${m.phone}" class="text-green-400 font-bold flex items-center gap-2 hover:underline">
+                                    <span>📞</span> ${m.phone || 'بدون رقم'}
+                                </a>
+                                <a href="https://wa.me/${m.phone}" target="_blank" class="text-emerald-500 font-bold flex items-center gap-2 hover:underline">
+                                    <span>💬</span> واتساب
+                                </a>
+                            </div>
+
+                            <p class="text-gray-400 mt-4 text-lg bg-white/5 p-4 rounded-xl border border-white/5 italic">
+                                "${m.message}"
+                            </p>
+                            
+                            <span class="text-[10px] text-gray-600 mt-4 block font-bold uppercase tracking-widest">
+                                Received on: ${m.date || 'غير معروف'}
+                            </span>
+                        </div>
+                        
+                        <button onclick="deleteMessage('${id}')" class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-6 py-2 rounded-full text-xs font-black transition uppercase">
+                            Delete
+                        </button>
+                    `;
+                    list.appendChild(div);
+                });
+            });
+        }
+
+        // وظيفة الحذف
+        window.deleteMessage = function(id) {
+            if(confirm("عايز تمسح رسالة العميل ده نهائياً؟")) {
+                remove(ref(db, 'messages/' + id));
+            }
+        }
+    </script>
+</body>
+</html>
